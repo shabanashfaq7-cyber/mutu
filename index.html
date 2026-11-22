@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Bunny & Mutu" />
+  <meta name="theme-color" content="#140720" />
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/833/833472.png" />
+  <title>Bunny & Mutu — Live</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      background: radial-gradient(circle at top, #2a0d3d 0%, #100619 65%, #08030d 100%);
+      color: #f8fafc;
+      height: 100dvh;
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .serif-title { font-family: 'Playfair Display', serif; }
+    .glass {
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.13);
+    }
+    .rose-grad { background: linear-gradient(135deg, #f43f5e 0%, #db2777 50%, #9333ea 100%); }
+    .hot-grad { background: linear-gradient(135deg, #dc2626 0%, #e11d48 55%, #7e22ce 100%); }
+    @keyframes pulseBeat {
+      0%, 100% { transform: scale(1); }
+      30% { transform: scale(1.18); }
+      60% { transform: scale(0.95); }
+    }
+    .beat { animation: pulseBeat 1.3s infinite ease-in-out; }
+    @keyframes floatHeart {
+      0% { transform: translateY(0) scale(0.8); opacity: 1; }
+      100% { transform: translateY(-180px) scale(1.4); opacity: 0; }
+    }
+    .fly-heart {
+      position: fixed;
+      pointer-events: none;
+      z-index: 99;
+      animation: floatHeart 1.6s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="antialiased">
+
+  <!-- 1. EXCLUSIVE 2-PERSON LOGIN + FACE ID -->
+  <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center p-5 bg-[#0e0516]">
+    <div class="glass rounded-3xl max-w-sm w-full p-6 space-y-5 shadow-2xl border border-rose-500/25">
+      <div class="text-center">
+        <div class="w-16 h-16 rounded-3xl rose-grad flex items-center justify-center mx-auto shadow-xl mb-3 beat">
+          <i class="fa-solid fa-heart text-2xl text-white"></i>
+        </div>
+        <h1 class="serif-title text-2xl font-bold text-white">Bunny & Mutu</h1>
+        <p class="text-xs text-rose-200/70 mt-1">Private Live Space • Shaban & Reshu Only</p>
+      </div>
+
+      <!-- Face ID Button -->
+      <div id="faceIdBox" class="hidden">
+        <button type="button" onclick="unlockWithFaceID()"
+          class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-sm shadow-lg flex items-center justify-center gap-2 active:scale-95 transition">
+          <i class="fa-solid fa-face-smile text-lg"></i>
+          <span id="faceIdLabel">Unlock with Face ID</span>
+        </button>
+        <div class="text-center text-[10px] text-slate-400 uppercase tracking-widest my-2.5">— or passcode —</div>
+      </div>
+
+      <!-- Profile Switcher -->
+      <div class="grid grid-cols-2 gap-2.5">
+        <button type="button" id="btnBunny" onclick="chooseUser('bunny')"
+          class="p-3 rounded-2xl border border-indigo-400 bg-indigo-500/25 text-center transition">
+          <div class="text-2xl">🐰</div>
+          <div class="text-xs font-extrabold text-white mt-0.5">Bunny</div>
+        </button>
+        <button type="button" id="btnReshu" onclick="chooseUser('reshu')"
+          class="p-3 rounded-2xl border border-white/15 bg-white/5 text-center transition">
+          <div class="text-2xl">👸🏻</div>
+          <div class="text-xs font-extrabold text-white mt-0.5">Mutu</div>
+        </button>
+      </div>
+
+      <form id="loginForm" class="space-y-3">
+        <input type="text" id="userIdInput" value="bunny" required autocomplete="off" placeholder="Account ID"
+          class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/15 text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-rose-500" />
+        <input type="password" id="passInput" inputmode="numeric" required placeholder="Secret Passcode (••••)"
+          class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/15 text-sm font-bold text-white tracking-widest focus:outline-none focus:ring-2 focus:ring-rose-500" />
+        <p id="loginErr" class="hidden text-xs text-rose-300 bg-rose-950/90 border border-rose-500/40 p-2 rounded-xl text-center font-semibold"></p>
+        <button type="submit" class="w-full py-3.5 rounded-2xl rose-grad text-white font-extrabold text-sm shadow-lg active:scale-95 transition">
+          Open Live Chat <i class="fa-solid fa-arrow-right ml-1"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. MAIN SINGLE-SCREEN LIVE APP -->
+  <div id="mainApp" class="hidden max-w-lg mx-auto h-full flex flex-col px-3.5 py-3 gap-2.5" style="padding-top: max(0.75rem, env(safe-area-inset-top)); padding-bottom: max(0.75rem, env(safe-area-inset-bottom));">
+
+    <!-- TOP LIVE STATUS HEADER -->
+    <header class="glass rounded-3xl px-4 py-2.5 flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-2.5">
+        <div class="relative">
+          <div class="w-10 h-10 rounded-2xl rose-grad flex items-center justify-center text-lg shadow">
+            <span id="partnerAvatar">👸🏻</span>
+          </div>
+          <span id="partnerOnlineDot" class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-slate-500 border-2 border-[#140720]"></span>
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <h2 id="partnerNameTitle" class="text-sm font-extrabold text-white">Mutu (Reshu)</h2>
+            <span id="dbSyncBadge" class="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold">Connecting...</span>
+          </div>
+          <p id="partnerPresenceText" class="text-[11px] text-slate-300">Checking live status...</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1.5">
+        <!-- Live Heart Pulse Button -->
+        <button onclick="sendLivePulse()" title="Send Heartbeat"
+          class="w-9 h-9 rounded-xl rose-grad text-white flex items-center justify-center shadow active:scale-90 transition beat">
+          <i class="fa-solid fa-heart text-sm"></i>
+        </button>
+        <!-- Setup Face ID -->
+        <button onclick="registerFaceID()" title="Enable Face ID"
+          class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 flex items-center justify-center text-xs">
+          <i class="fa-solid fa-face-smile"></i>
+        </button>
+        <!-- Clear Chat -->
+        <button onclick="clearChatHistory()" title="Clear Chat"
+          class="w-9 h-9 rounded-xl bg-white/10 text-rose-300 flex items-center justify-center text-xs">
+          <i class="fa-solid fa-broom"></i>
+        </button>
+        <!-- Lock -->
+        <button onclick="lockApp()" title="Lock"
+          class="w-9 h-9 rounded-xl bg-white/10 text-slate-300 flex items-center justify-center text-xs">
+          <i class="fa-solid fa-lock"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- LIVE PULSE TICKER BANNER -->
+    <div id="pulseBanner" class="glass rounded-2xl px-3.5 py-1.5 flex items-center justify-between text-[11px] shrink-0">
+      <span id="pulseBannerText" class="text-rose-200 font-semibold truncate">💓 Tap the heart above to send a live pulse!</span>
+      <span id="myMoodPill" onclick="cycleMyMood()" class="px-2 py-0.5 rounded-full bg-white/10 text-white font-bold cursor-pointer shrink-0 ml-2">
+        🥰 In Love
+      </span>
+    </div>
+
+    <!-- REALTIME MESSAGES CONTAINER -->
+    <main id="chatFeed" class="flex-1 glass rounded-3xl p-3.5 overflow-y-auto space-y-3">
+      <p class="text-xs text-slate-400 text-center py-10">Loading live messages...</p>
+    </main>
+
+    <!-- COMPACT HOT & LOVE STICKER DRAWER (12 BEST STICKERS) -->
+    <div id="stickerBox" class="hidden glass rounded-2xl p-2.5 shrink-0 border border-rose-500/30">
+      <div class="flex items-center justify-between mb-2 px-1">
+        <span class="text-[11px] font-extrabold text-rose-300">🔥 Hot & Romantic Stickers</span>
+        <button type="button" onclick="toggleStickers()" class="text-xs text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="stickerItemsGrid" class="grid grid-cols-3 gap-1.5 max-h-40 overflow-y-auto"></div>
+    </div>
+
+    <!-- BOTTOM INPUT BAR (PHOTO + STICKER + TEXT) -->
+    <footer class="glass rounded-3xl p-2 shrink-0">
+      <input type="file" id="photoFileInput" accept="image/*" class="hidden" onchange="uploadPrivatePhoto(event)" />
+      <form id="msgForm" class="flex items-center gap-1.5">
+        <button type="button" onclick="document.getElementById('photoFileInput').click()" title="Send Photo/Selfie"
+          class="w-10 h-10 rounded-2xl bg-indigo-500/25 text-indigo-300 flex items-center justify-center shrink-0 active:scale-95">
+          <i class="fa-solid fa-camera text-sm"></i>
+        </button>
+        <button type="button" onclick="toggleStickers()" title="Hot Stickers"
+          class="w-10 h-10 rounded-2xl hot-grad text-white flex items-center justify-center shrink-0 active:scale-95">
+          <i class="fa-solid fa-fire text-sm"></i>
+        </button>
+        <input type="text" id="msgInput" placeholder="Message your love..." autocomplete="off"
+          class="flex-1 bg-white/10 border border-white/15 rounded-2xl px-3.5 py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500" />
+        <button type="submit" class="w-11 h-10 rounded-2xl rose-grad text-white flex items-center justify-center shadow shrink-0 active:scale-95">
+          <i class="fa-solid fa-paper-plane text-xs"></i>
+        </button>
+      </form>
+    </footer>
+  </div>
+
+  <!-- FULLSCREEN PHOTO ZOOM MODAL -->
+  <div id="zoomModal" onclick="this.classList.add('hidden')" class="hidden fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4">
+    <img id="zoomImg" src="" class="max-h-[85vh] max-w-full rounded-2xl object-contain" />
+  </div>
+
+  <!-- TOAST -->
+  <div id="toastBar" class="hidden fixed top-5 left-1/2 -translate-x-1/2 z-50 rose-grad text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-xl"></div>
+
+  <!-- AUTH, FACE ID & UI SCRIPT -->
+  <script>
+    const USERS = {
+      bunny: { role: "Bunny", name: "Bunny (Shaban)", partnerRole: "Mutu", partnerName: "Mutu (Reshu)", partnerIcon: "👸🏻", pin: "0710" },
+      reshu: { role: "Mutu", name: "Mutu (Reshu)", partnerRole: "Bunny", partnerName: "Bunny (Shaban)", partnerIcon: "🐰", pin: "0610" }
+    };
+
+    const STICKERS = [
+      { e: "🔥", t: "Come Closer...", s: "Aaj raat door rehna mushkil hai 😈", hot: true },
+      { e: "💋", t: "Deep Kiss", s: "Ek lambi si pyaari kiss sirf tumhare liye 💋", hot: true },
+      { e: "🥵", t: "Driving Me Crazy", s: "Tumhara khayal hi temperature badha deta hai 🔥", hot: true },
+      { e: "😈", t: "Midnight Craving", s: "Sirf tum aur ek lambi raat 🌙🔥", hot: true },
+      { e: "🫦", t: "Can't Control", s: "Dekh kar control mushkil ho jata hai jaan 🫦", hot: true },
+      { e: "🛌", t: "Hold Me Tight", s: "Baahon mein bhar ke sone ka mann hai ❤️‍🔥", hot: true },
+      { e: "❤️", t: "I Love You Jaan", s: "Meri har khushi tumse shuru hoti hai ❤️", hot: false },
+      { e: "🥺", t: "Miss You Bahut", s: "Abhi ke abhi tumhari yaad aa rahi hai 🥺💕", hot: false },
+      { e: "🤗", t: "Tight Jhappi", s: "Ek zor ki jhappi bhej raha hoon 🤗❤️", hot: false },
+      { e: "🌹", t: "Red Rose", s: "Meri zindagi ka sabse khoobsurat phool 🌹", hot: false },
+      { e: "🙏🏻", t: "Sorry Na Jaan", s: "Gussa thook do, muskurado ab 🥺💖", hot: false },
+      { e: "🌙", t: "Goodnight Jaan", s: "Khwaabon mein milte hain, sweet dreams 🌙💋", hot: false }
+    ];
+
+    function chooseUser(key) {
+      document.getElementById("userIdInput").value = key;
+      document.getElementById("btnBunny").className = key === "bunny"
+        ? "p-3 rounded-2xl border border-indigo-400 bg-indigo-500/25 text-center transition"
+        : "p-3 rounded-2xl border border-white/15 bg-white/5 text-center transition";
+      document.getElementById("btnReshu").className = key === "reshu"
+        ? "p-3 rounded-2xl border border-rose-400 bg-rose-500/25 text-center transition"
+        : "p-3 rounded-2xl border border-white/15 bg-white/5 text-center transition";
+    }
+
+    function initFaceIdButton() {
+      const cred = localStorage.getItem("bm_face_id");
+      const owner = localStorage.getItem("bm_face_user");
+      if (cred && owner && USERS[owner]) {
+        document.getElementById("faceIdBox").classList.remove("hidden");
+        document.getElementById("faceIdLabel").textContent = `Face ID Unlock (${USERS[owner].role})`;
+        chooseUser(owner);
+      }
+    }
+    initFaceIdButton();
+
+    document.getElementById("loginForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const key = document.getElementById("userIdInput").value.trim().toLowerCase();
+      const pin = document.getElementById("passInput").value.trim();
+      const err = document.getElementById("loginErr");
+      err.classList.add("hidden");
+
+      if (!USERS[key] || USERS[key].pin !== pin) {
+        if (navigator.vibrate) navigator.vibrate([70, 50, 70]);
+        err.textContent = "Wrong ID or Passcode!";
+        err.classList.remove("hidden");
+        return;
+      }
+      enterApp(key);
+    });
+
+    function enterApp(key) {
+      const u = USERS[key];
+      localStorage.setItem("bm_user_key", key);
+      document.getElementById("passInput").value = "";
+      document.getElementById("loginScreen").classList.add("hidden");
+      document.getElementById("mainApp").classList.remove("hidden");
+      document.getElementById("partnerNameTitle").textContent = u.partnerName;
+      document.getElementById("partnerAvatar").textContent = u.partnerIcon;
+      if (window.startLiveSync) window.startLiveSync(key);
+    }
+
+    function lockApp() {
+      document.getElementById("mainApp").classList.add("hidden");
+      document.getElementById("loginScreen").classList.remove("hidden");
+      initFaceIdButton();
+    }
+
+    async function registerFaceID() {
+      if (!window.PublicKeyCredential) return alert("Face ID not supported in this browser.");
+      const key = localStorage.getItem("bm_user_key") || "bunny";
+      try {
+        const challenge = crypto.getRandomValues(new Uint8Array(32));
+        const cred = await navigator.credentials.create({
+          publicKey: {
+            challenge,
+            rp: { name: "Bunny & Mutu Live" },
+            user: { id: new TextEncoder().encode(key), name: key, displayName: USERS[key].name },
+            pubKeyCredParams: [{ alg: -7, type: "public-key" }, { alg: -257, type: "public-key" }],
+            authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
+            timeout: 60000
+          }
+        });
+        if (cred) {
+          localStorage.setItem("bm_face_id", btoa(String.fromCharCode(...new Uint8Array(cred.rawId))));
+          localStorage.setItem("bm_face_user", key);
+          toast("Face ID Activated! ✅");
+        }
+      } catch (e) {
+        alert("Face ID setup canceled: " + e.message);
+      }
+    }
+
+    async function unlockWithFaceID() {
+      const cred = localStorage.getItem("bm_face_id");
+      const owner = localStorage.getItem("bm_face_user");
+      if (!cred || !owner) return;
+      try {
+        const challenge = crypto.getRandomValues(new Uint8Array(32));
+        const rawId = Uint8Array.from(atob(cred), c => c.charCodeAt(0));
+        const res = await navigator.credentials.get({
+          publicKey: { challenge, allowCredentials: [{ id: rawId, type: "public-key" }], userVerification: "required" }
+        });
+        if (res) {
+          enterApp(owner);
+          toast("Unlocked with Face ID ❤️");
+        }
+      } catch (e) {
+        toast("Face ID failed — use passcode");
+      }
+    }
+
+    function toggleStickers() {
+      const box = document.getElementById("stickerBox");
+      const opening = box.classList.contains("hidden");
+      box.classList.toggle("hidden");
+      if (opening) {
+        document.getElementById("stickerItemsGrid").innerHTML = STICKERS.map(st => `
+          <button type="button" onclick="sendSticker('${st.e}', '${st.t.replace(/'/g, "\\'")}', '${st.s.replace(/'/g, "\\'")}', ${st.hot})"
+            class="p-2 rounded-xl ${st.hot ? 'bg-rose-950/70 border-rose-500/40' : 'bg-white/10 border-white/15'} border text-center flex flex-col items-center active:scale-95">
+            <span class="text-2xl">${st.e}</span>
+            <span class="text-[10px] font-bold text-white line-clamp-1 mt-0.5">${st.t}</span>
+          </button>
+        `).join('');
+      }
+    }
+
+    function flyHearts(hot = false) {
+      const icons = hot ? ['🔥', '💋', '❤️‍🔥', '😈'] : ['❤️', '💖', '💕', '🌹'];
+      for (let i = 0; i < 8; i++) {
+        const el = document.createElement("span");
+        el.textContent = icons[Math.floor(Math.random() * icons.length)];
+        el.className = "fly-heart text-2xl";
+        el.style.left = (15 + Math.random() * 70) + "vw";
+        el.style.bottom = "14vh";
+        el.style.animationDelay = (i * 0.08) + "s";
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 1800);
+      }
+    }
+
+    function toast(msg) {
+      const t = document.getElementById("toastBar");
+      t.textContent = msg;
+      t.classList.remove("hidden");
+      setTimeout(() => t.classList.add("hidden"), 2200);
+    }
+  </script>
+
+  <!-- CLEAN REALTIME FIREBASE ENGINE -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getFirestore, doc, setDoc, addDoc, deleteDoc, collection, onSnapshot, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDC2bPdSPl_r3DpbyuV77Xhz8BzS1jpauw",
+      authDomain: "bonnington-app.firebaseapp.com",
+      projectId: "bonnington-app",
+      storageBucket: "bonnington-app.firebasestorage.app",
+      messagingSenderId: "164741416650",
+      appId: "1:164741416650:web:6f86020cab90e9f0b55633"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const MOODS = ["🥰 In Love", "🔥 Hot Mood", "🥺 Missing You", "💋 Craving Kiss", "🫡 On Duty", "😴 Sleepy"];
+    let moodIndex = 0;
+    let heartbeatTimer = null;
+
+    window.startLiveSync = (userKey) => {
+      const me = USERS[userKey].role;           // "Bunny" or "Mutu"
+      const partner = USERS[userKey].partnerRole; // "Mutu" or "Bunny"
+
+      const metaRef = doc(db, "bm_live_v2", "status");
+      const msgsCol = collection(db, "bm_live_v2_messages");
+
+      // 1. Update My Online Heartbeat Every 15 Seconds
+      const pingPresence = () => {
+        setDoc(metaRef, {
+          [me]: { lastSeen: Date.now(), mood: MOODS[moodIndex] }
+        }, { merge: true }).catch(err => showSyncError(err));
+      };
+      pingPresence();
+      if (heartbeatTimer) clearInterval(heartbeatTimer);
+      heartbeatTimer = setInterval(pingPresence, 15000);
+
+      // 2. Listen to Live Presence, Mood & Pulse
+      onSnapshot(metaRef, (snap) => {
+        setSyncConnected();
+        if (!snap.exists()) return;
+        const data = snap.data();
+
+        if (data.pulseText) {
+          document.getElementById("pulseBannerText").textContent = data.pulseText;
+        }
+
+        const pInfo = data[partner];
+        const dot = document.getElementById("partnerOnlineDot");
+        const sub = document.getElementById("partnerPresenceText");
+
+        if (pInfo && pInfo.lastSeen) {
+          const isOnline = (Date.now() - pInfo.lastSeen) < 40000;
+          dot.className = isOnline
+            ? "absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#140720] animate-ping"
+            : "absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-slate-500 border-2 border-[#140720]";
+          const timeStr = new Date(pInfo.lastSeen).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          sub.textContent = isOnline
+            ? `Online Now • ${pInfo.mood || '🥰 In Love'}`
+            : `Last seen ${timeStr} • ${pInfo.mood || ''}`;
+        } else {
+          sub.textContent = "Waiting for partner to come online...";
+        }
+      }, (err) => showSyncError(err));
+
+      // 3. Listen to Live Chat Messages
+      onSnapshot(query(msgsCol, orderBy("ts", "asc"), limit(100)), (snap) => {
+        setSyncConnected();
+        const feed = document.getElementById("chatFeed");
+
+        if (snap.empty) {
+          feed.innerHTML = `<div class="text-center py-12 text-xs text-slate-400">Live connection ready! Send a message, selfie, or hot sticker ❤️🔥</div>`;
+          return;
+        }
+
+        feed.innerHTML = snap.docs.map(d => {
+          const m = d.data();
+          const mine = m.sender === me;
+          const time = m.ts ? new Date(m.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+
+          if (m.type === "photo" && m.img) {
+            return `
+              <div class="flex flex-col ${mine ? 'items-end' : 'items-start'}">
+                <span class="text-[10px] text-slate-400 mb-1 px-1">${m.sender} • ${time}</span>
+                <div class="max-w-[75%] p-1.5 rounded-3xl ${mine ? 'rose-grad' : 'bg-white/15'} shadow-lg">
+                  <img src="${m.img}" onclick="document.getElementById('zoomImg').src='${m.img}'; document.getElementById('zoomModal').classList.remove('hidden');"
+                    class="rounded-2xl max-h-60 object-cover cursor-pointer" />
+                </div>
+              </div>
+            `;
+          }
+
+          if (m.type === "sticker") {
+            return `
+              <div class="flex flex-col ${mine ? 'items-end' : 'items-start'}">
+                <span class="text-[10px] text-slate-400 mb-1 px-1">${m.sender} • ${time}</span>
+                <div class="max-w-[78%] p-3.5 rounded-3xl ${m.hot ? 'hot-grad border border-rose-300/30' : 'rose-grad border border-white/20'} text-center shadow-lg">
+                  <div class="text-4xl mb-1">${m.e}</div>
+                  <div class="serif-title text-sm font-bold text-white">${m.t}</div>
+                  <p class="text-[11px] text-rose-100 mt-0.5">${m.s}</p>
+                </div>
+              </div>
+            `;
+          }
+
+          return `
+            <div class="flex flex-col ${mine ? 'items-end' : 'items-start'}">
+              <span class="text-[10px] text-slate-400 mb-0.5 px-1">${m.sender} • ${time}</span>
+              <div class="max-w-[80%] px-3.5 py-2.5 rounded-2xl text-xs leading-relaxed ${mine ? 'rose-grad text-white rounded-br-sm' : 'bg-white/15 text-white rounded-bl-sm'}">
+                ${m.text}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        feed.scrollTop = feed.scrollHeight;
+      }, (err) => showSyncError(err));
+
+      // Send Text Message
+      document.getElementById("msgForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const input = document.getElementById("msgInput");
+        const val = input.value.trim();
+        if (!val) return;
+        input.value = "";
+        await addDoc(msgsCol, { sender: me, type: "text", text: val, ts: Date.now() });
+      };
+
+      // Send Sticker
+      window.sendSticker = async (e, t, s, hot) => {
+        if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
+        flyHearts(hot);
+        document.getElementById("stickerBox").classList.add("hidden");
+        await addDoc(msgsCol, { sender: me, type: "sticker", e, t, s, hot, ts: Date.now() });
+      };
+
+      // Send Compressed Photo
+      window.uploadPrivatePhoto = (ev) => {
+        const file = ev.target.files[0];
+        if (!file) return;
+        toast("Sending photo...");
+        const reader = new FileReader();
+        reader.onload = (r) => {
+          const img = new Image();
+          img.onload = async () => {
+            const canvas = document.createElement("canvas");
+            const MAX = 680;
+            let w = img.width, h = img.height;
+            if (w > h && w > MAX) { h *= MAX / w; w = MAX; }
+            else if (h > MAX) { w *= MAX / h; h = MAX; }
+            canvas.width = w; canvas.height = h;
+            canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+            const dataUrl = canvas.toDataURL("image/jpeg", 0.65);
+            await addDoc(msgsCol, { sender: me, type: "photo", img: dataUrl, ts: Date.now() });
+            flyHearts(false);
+            toast("Photo sent! 📸");
+            ev.target.value = "";
+          };
+          img.src = r.target.result;
+        };
+        reader.readAsDataURL(file);
+      };
+
+      // Send Heart Pulse
+      window.sendLivePulse = async () => {
+        if (navigator.vibrate) navigator.vibrate([60, 40, 100]);
+        flyHearts(false);
+        const t = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        await setDoc(metaRef, { pulseText: `💓 ${me} sent a live heartbeat at ${t}` }, { merge: true });
+        toast(`Heartbeat sent to ${partner}!`);
+      };
+
+      // Cycle Mood
+      window.cycleMyMood = async () => {
+        moodIndex = (moodIndex + 1) % MOODS.length;
+        document.getElementById("myMoodPill").textContent = MOODS[moodIndex];
+        await setDoc(metaRef, { [me]: { mood: MOODS[moodIndex], lastSeen: Date.now() } }, { merge: true });
+      };
+
+      // Clear Chat
+      window.clearChatHistory = async () => {
+        if (!confirm("Delete all messages & photos for both of you?")) return;
+        const snap = await getDocs(msgsCol);
+        for (const d of snap.docs) await deleteDoc(doc(db, "bm_live_v2_messages", d.id));
+        toast("Chat cleared!");
+      };
+    };
+
+    function setSyncConnected() {
+      const b = document.getElementById("dbSyncBadge");
+      b.textContent = "🟢 Live";
+      b.className = "text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold";
+    }
+
+    function showSyncError(err) {
+      const b = document.getElementById("dbSyncBadge");
+      b.textContent = "🔴 Sync Blocked";
+      b.className = "text-[9px] px-1.5 py-0.5 rounded-full bg-red-500/25 text-red-300 font-bold";
+      document.getElementById("chatFeed").innerHTML = `
+        <div class="p-4 rounded-2xl bg-red-950/70 border border-red-500/40 text-xs text-red-200 space-y-2">
+          <div class="font-bold">⚠️ Firebase Sync Error: ${err.code || err.message}</div>
+          <p>Firebase Console -> Firestore Database -> Rules mein ja kar <b>allow read, write: if true;</b> publish karein.</p>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
