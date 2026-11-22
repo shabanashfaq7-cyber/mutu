@@ -12,7 +12,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
     body {
       font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
       background: radial-gradient(circle at top, #2a0d3d 0%, #100619 65%, #08030d 100%);
@@ -29,7 +29,8 @@
       border: 1px solid rgba(255, 255, 255, 0.13);
     }
     .rose-grad { background: linear-gradient(135deg, #f43f5e 0%, #db2777 50%, #9333ea 100%); }
-    .hot-grad { background: linear-gradient(135deg, #dc2626 0%, #e11d48 55%, #7e22ce 100%); }
+    .hot-grad { background: linear-gradient(135deg, #991b1b 0%, #e11d48 55%, #7e22ce 100%); }
+    .angry-grad { background: linear-gradient(135deg, #450a0a 0%, #991b1b 55%, #7f1d1d 100%); }
     @keyframes pulseBeat {
       0%, 100% { transform: scale(1); }
       30% { transform: scale(1.18); }
@@ -46,6 +47,12 @@
       z-index: 99;
       animation: floatHeart 1.6s ease-out forwards;
     }
+    @keyframes cardPop {
+      0% { transform: scale(0.75) rotate(-2deg); opacity: 0; }
+      70% { transform: scale(1.03) rotate(1deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .card-pop { animation: cardPop 0.28s ease-out forwards; }
   </style>
 </head>
 <body class="antialiased">
@@ -61,7 +68,6 @@
         <p class="text-xs text-rose-200/70 mt-1">Private Live Space • Shaban & Reshu Only</p>
       </div>
 
-      <!-- Face ID Button -->
       <div id="faceIdBox" class="hidden">
         <button type="button" onclick="unlockWithFaceID()"
           class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-sm shadow-lg flex items-center justify-center gap-2 active:scale-95 transition">
@@ -71,7 +77,6 @@
         <div class="text-center text-[10px] text-slate-400 uppercase tracking-widest my-2.5">— or passcode —</div>
       </div>
 
-      <!-- Profile Switcher -->
       <div class="grid grid-cols-2 gap-2.5">
         <button type="button" id="btnBunny" onclick="chooseUser('bunny')"
           class="p-3 rounded-2xl border border-indigo-400 bg-indigo-500/25 text-center transition">
@@ -99,43 +104,39 @@
   </div>
 
   <!-- 2. MAIN SINGLE-SCREEN LIVE APP -->
-  <div id="mainApp" class="hidden max-w-lg mx-auto h-full flex flex-col px-3.5 py-3 gap-2.5" style="padding-top: max(0.75rem, env(safe-area-inset-top)); padding-bottom: max(0.75rem, env(safe-area-inset-bottom));">
+  <div id="mainApp" class="hidden max-w-lg mx-auto h-full flex flex-col px-3.5 py-3 gap-2" style="padding-top: max(0.7rem, env(safe-area-inset-top)); padding-bottom: max(0.7rem, env(safe-area-inset-bottom));">
 
     <!-- TOP LIVE STATUS HEADER -->
-    <header class="glass rounded-3xl px-4 py-2.5 flex items-center justify-between shrink-0">
-      <div class="flex items-center gap-2.5">
-        <div class="relative">
+    <header class="glass rounded-3xl px-3.5 py-2.5 flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="relative shrink-0">
           <div class="w-10 h-10 rounded-2xl rose-grad flex items-center justify-center text-lg shadow">
             <span id="partnerAvatar">👸🏻</span>
           </div>
           <span id="partnerOnlineDot" class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-slate-500 border-2 border-[#140720]"></span>
         </div>
-        <div>
+        <div class="min-w-0">
           <div class="flex items-center gap-1.5">
-            <h2 id="partnerNameTitle" class="text-sm font-extrabold text-white">Mutu (Reshu)</h2>
-            <span id="dbSyncBadge" class="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold">Connecting...</span>
+            <h2 id="partnerNameTitle" class="text-sm font-extrabold text-white truncate">Mutu (Reshu)</h2>
+            <span id="dbSyncBadge" class="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold shrink-0">Connecting...</span>
           </div>
-          <p id="partnerPresenceText" class="text-[11px] text-slate-300">Checking live status...</p>
+          <p id="partnerPresenceText" class="text-[11px] text-slate-300 truncate">Checking live status...</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-1.5">
-        <!-- Live Heart Pulse Button -->
+      <div class="flex items-center gap-1 shrink-0">
         <button onclick="sendLivePulse()" title="Send Heartbeat"
           class="w-9 h-9 rounded-xl rose-grad text-white flex items-center justify-center shadow active:scale-90 transition beat">
           <i class="fa-solid fa-heart text-sm"></i>
         </button>
-        <!-- Setup Face ID -->
         <button onclick="registerFaceID()" title="Enable Face ID"
           class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 flex items-center justify-center text-xs">
           <i class="fa-solid fa-face-smile"></i>
         </button>
-        <!-- Clear Chat -->
         <button onclick="clearChatHistory()" title="Clear Chat"
           class="w-9 h-9 rounded-xl bg-white/10 text-rose-300 flex items-center justify-center text-xs">
           <i class="fa-solid fa-broom"></i>
         </button>
-        <!-- Lock -->
         <button onclick="lockApp()" title="Lock"
           class="w-9 h-9 rounded-xl bg-white/10 text-slate-300 flex items-center justify-center text-xs">
           <i class="fa-solid fa-lock"></i>
@@ -144,7 +145,7 @@
     </header>
 
     <!-- LIVE PULSE TICKER BANNER -->
-    <div id="pulseBanner" class="glass rounded-2xl px-3.5 py-1.5 flex items-center justify-between text-[11px] shrink-0">
+    <div id="pulseBanner" class="glass rounded-2xl px-3 py-1.5 flex items-center justify-between text-[11px] shrink-0">
       <span id="pulseBannerText" class="text-rose-200 font-semibold truncate">💓 Tap the heart above to send a live pulse!</span>
       <span id="myMoodPill" onclick="cycleMyMood()" class="px-2 py-0.5 rounded-full bg-white/10 text-white font-bold cursor-pointer shrink-0 ml-2">
         🥰 In Love
@@ -156,16 +157,31 @@
       <p class="text-xs text-slate-400 text-center py-10">Loading live messages...</p>
     </main>
 
-    <!-- COMPACT HOT & LOVE STICKER DRAWER (12 BEST STICKERS) -->
-    <div id="stickerBox" class="hidden glass rounded-2xl p-2.5 shrink-0 border border-rose-500/30">
-      <div class="flex items-center justify-between mb-2 px-1">
-        <span class="text-[11px] font-extrabold text-rose-300">🔥 Hot & Romantic Stickers</span>
-        <button type="button" onclick="toggleStickers()" class="text-xs text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    <!-- 108 ILLUSTRATED COUPLE STICKERS DRAWER -->
+    <div id="stickerBox" class="hidden glass rounded-2xl p-2.5 shrink-0 border border-rose-500/35 space-y-2">
+      <div class="flex items-center justify-between gap-1">
+        <div class="flex items-center gap-1 overflow-x-auto">
+          <button type="button" onclick="switchStickerTab('hot')" id="stTabHot"
+            class="px-2 py-1 rounded-lg hot-grad text-white text-[10px] font-extrabold shrink-0">🔥 Hot (27)</button>
+          <button type="button" onclick="switchStickerTab('romance')" id="stTabRomance"
+            class="px-2 py-1 rounded-lg bg-white/10 text-slate-300 text-[10px] font-bold shrink-0">💖 Romance (27)</button>
+          <button type="button" onclick="switchStickerTab('gussa')" id="stTabGussa"
+            class="px-2 py-1 rounded-lg bg-white/10 text-slate-300 text-[10px] font-bold shrink-0">😤 Gussa (27)</button>
+          <button type="button" onclick="switchStickerTab('manana')" id="stTabManana"
+            class="px-2 py-1 rounded-lg bg-white/10 text-slate-300 text-[10px] font-bold shrink-0">🥺 Manana (27)</button>
+        </div>
+        <button type="button" onclick="toggleStickers()" class="text-xs text-slate-400 hover:text-white px-1.5 shrink-0">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
-      <div id="stickerItemsGrid" class="grid grid-cols-3 gap-1.5 max-h-40 overflow-y-auto"></div>
+
+      <input type="text" id="stickerSearchInput" oninput="filterStickers()" placeholder="Search 108 stickers (kiss, hug, hot, gussa, sorry)..."
+        class="w-full px-2.5 py-1.5 rounded-xl bg-black/40 border border-white/15 text-[11px] text-white placeholder-slate-400 focus:outline-none focus:border-rose-400" />
+
+      <div id="stickerItemsGrid" class="grid grid-cols-3 gap-1.5 max-h-48 overflow-y-auto pr-0.5"></div>
     </div>
 
-    <!-- BOTTOM INPUT BAR (PHOTO + STICKER + TEXT) -->
+    <!-- BOTTOM INPUT BAR -->
     <footer class="glass rounded-3xl p-2 shrink-0">
       <input type="file" id="photoFileInput" accept="image/*" class="hidden" onchange="uploadPrivatePhoto(event)" />
       <form id="msgForm" class="flex items-center gap-1.5">
@@ -173,8 +189,8 @@
           class="w-10 h-10 rounded-2xl bg-indigo-500/25 text-indigo-300 flex items-center justify-center shrink-0 active:scale-95">
           <i class="fa-solid fa-camera text-sm"></i>
         </button>
-        <button type="button" onclick="toggleStickers()" title="Hot Stickers"
-          class="w-10 h-10 rounded-2xl hot-grad text-white flex items-center justify-center shrink-0 active:scale-95">
+        <button type="button" onclick="toggleStickers()" title="108 Couple Stickers"
+          class="w-10 h-10 rounded-2xl hot-grad text-white flex items-center justify-center shrink-0 active:scale-95 shadow">
           <i class="fa-solid fa-fire text-sm"></i>
         </button>
         <input type="text" id="msgInput" placeholder="Message your love..." autocomplete="off"
@@ -194,27 +210,181 @@
   <!-- TOAST -->
   <div id="toastBar" class="hidden fixed top-5 left-1/2 -translate-x-1/2 z-50 rose-grad text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-xl"></div>
 
-  <!-- AUTH, FACE ID & UI SCRIPT -->
+  <!-- AUTH, FACE ID & 108 ILLUSTRATED COUPLE STICKERS ENGINE -->
   <script>
     const USERS = {
       bunny: { role: "Bunny", name: "Bunny (Shaban)", partnerRole: "Mutu", partnerName: "Mutu (Reshu)", partnerIcon: "👸🏻", pin: "0710" },
       reshu: { role: "Mutu", name: "Mutu (Reshu)", partnerRole: "Bunny", partnerName: "Bunny (Shaban)", partnerIcon: "🐰", pin: "0610" }
     };
 
-    const STICKERS = [
-      { e: "🔥", t: "Come Closer...", s: "Aaj raat door rehna mushkil hai 😈", hot: true },
-      { e: "💋", t: "Deep Kiss", s: "Ek lambi si pyaari kiss sirf tumhare liye 💋", hot: true },
-      { e: "🥵", t: "Driving Me Crazy", s: "Tumhara khayal hi temperature badha deta hai 🔥", hot: true },
-      { e: "😈", t: "Midnight Craving", s: "Sirf tum aur ek lambi raat 🌙🔥", hot: true },
-      { e: "🫦", t: "Can't Control", s: "Dekh kar control mushkil ho jata hai jaan 🫦", hot: true },
-      { e: "🛌", t: "Hold Me Tight", s: "Baahon mein bhar ke sone ka mann hai ❤️‍🔥", hot: true },
-      { e: "❤️", t: "I Love You Jaan", s: "Meri har khushi tumse shuru hoti hai ❤️", hot: false },
-      { e: "🥺", t: "Miss You Bahut", s: "Abhi ke abhi tumhari yaad aa rahi hai 🥺💕", hot: false },
-      { e: "🤗", t: "Tight Jhappi", s: "Ek zor ki jhappi bhej raha hoon 🤗❤️", hot: false },
-      { e: "🌹", t: "Red Rose", s: "Meri zindagi ka sabse khoobsurat phool 🌹", hot: false },
-      { e: "🙏🏻", t: "Sorry Na Jaan", s: "Gussa thook do, muskurado ab 🥺💖", hot: false },
-      { e: "🌙", t: "Goodnight Jaan", s: "Khwaabon mein milte hain, sweet dreams 🌙💋", hot: false }
-    ];
+    // Custom Illustrated Human Couple SVG Generator (Pose: kiss, hug, hot, angry, sorry, love)
+    function makeCoupleSvg(pose, accentColor = "#fb7185") {
+      if (pose === "angry") {
+        return `<svg viewBox="0 0 120 74" class="w-20 h-12 mx-auto" fill="none">
+          <circle cx="38" cy="24" r="13" fill="#fcd34d" stroke="#ef4444" stroke-width="2"/>
+          <path d="M29 19L35 22M47 19L41 22" stroke="#7f1d1d" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="34" cy="25" r="1.8" fill="#1f2937"/><circle cx="42" cy="25" r="1.8" fill="#1f2937"/>
+          <path d="M33 31Q38 28 43 31" stroke="#7f1d1d" stroke-width="2" stroke-linecap="round"/>
+          <path d="M22 66C22 46 54 46 54 66" fill="#991b1b"/>
+          <circle cx="82" cy="24" r="13" fill="#fde68a" stroke="#ef4444" stroke-width="2"/>
+          <path d="M73 19L79 22M91 19L85 22" stroke="#7f1d1d" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="78" cy="25" r="1.8" fill="#1f2937"/><circle cx="86" cy="25" r="1.8" fill="#1f2937"/>
+          <path d="M77 31Q82 28 87 31" stroke="#7f1d1d" stroke-width="2" stroke-linecap="round"/>
+          <path d="M66 66C66 46 98 46 98 66" fill="#b91c1c"/>
+          <path d="M56 14L64 22M64 14L56 22" stroke="#f87171" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>`;
+      }
+      if (pose === "sorry") {
+        return `<svg viewBox="0 0 120 74" class="w-20 h-12 mx-auto" fill="none">
+          <circle cx="44" cy="25" r="13" fill="#fde68a"/>
+          <circle cx="40" cy="25" r="2" fill="#111827"/><circle cx="48" cy="25" r="2" fill="#111827"/>
+          <circle cx="38" cy="29" r="3" fill="#fda4af" opacity="0.7"/><circle cx="50" cy="29" r="3" fill="#fda4af" opacity="0.7"/>
+          <path d="M41 32Q44 29 47 32" stroke="#9f1239" stroke-width="2" stroke-linecap="round"/>
+          <path d="M28 66C28 47 60 47 60 66" fill="#ec4899"/>
+          <path d="M74 36C74 28 84 28 84 36C84 43 74 49 74 49C74 49 64 43 64 36C64 28 74 28 74 36Z" fill="${accentColor}"/>
+          <path d="M88 22C88 17 94 17 94 22C94 26 88 30 88 30C88 30 82 26 82 22C82 17 88 17 88 22Z" fill="#fbbf24"/>
+        </svg>`;
+      }
+      if (pose === "hot") {
+        return `<svg viewBox="0 0 120 74" class="w-20 h-12 mx-auto" fill="none">
+          <circle cx="48" cy="25" r="13" fill="#fcd34d" stroke="#fb7185" stroke-width="2"/>
+          <circle cx="70" cy="25" r="13" fill="#fde68a" stroke="#f43f5e" stroke-width="2"/>
+          <ellipse cx="59" cy="27" rx="3.2" ry="4.5" fill="#f43f5e"/>
+          <path d="M24 68C24 46 96 46 96 68" fill="#be123c"/>
+          <path d="M59 8C54 2 45 5 47 12C49 17 59 22 59 22C59 22 69 17 71 12C73 5 64 2 59 8Z" fill="#fb7185"/>
+          <circle cx="28" cy="20" r="2.5" fill="#fbbf24"/><circle cx="92" cy="18" r="2.5" fill="#f43f5e"/>
+        </svg>`;
+      }
+      return `<svg viewBox="0 0 120 74" class="w-20 h-12 mx-auto" fill="none">
+        <circle cx="46" cy="26" r="13" fill="#fde68a"/>
+        <circle cx="74" cy="26" r="13" fill="#fcd34d"/>
+        <path d="M22 68C22 45 54 45 54 68" fill="#db2777"/>
+        <path d="M66 68C66 45 98 45 98 68" fill="#9333ea"/>
+        <path d="M48 48C54 54 66 54 72 48" stroke="#fda4af" stroke-width="4" stroke-linecap="round"/>
+        <path d="M60 11C56 6 49 9 51 15C53 19 60 24 60 24C60 24 67 19 69 15C71 9 64 6 60 11Z" fill="${accentColor}"/>
+      </svg>`;
+    }
+
+    const STICKERS_108 = {
+      hot: [
+        ["Bedtime Embrace", "Raat bhar baahon mein qaid karne ka mann hai 🔥", "hot"],
+        ["Breathless Kiss", "Hothon se hoth milakar saans rok lene ka mood hai 💋", "hot"],
+        ["Body Heat Rising", "Tumhare kareeb aate hi dil ki dhadkan tezz ho jaati hai 🥵", "hot"],
+        ["Midnight Temptation", "Raat ke andhere mein sirf tumhara nasha chadha hai 😈", "hot"],
+        ["Unstoppable Desire", "Aaj khud par control rakhna namumkin ho raha hai ⚡", "hot"],
+        ["Skin To Skin", "Ek garam hug aur dhadkanon ki aawaz... bas tum aur main ❤️‍🔥", "hot"],
+        ["Naughty & Bold", "Aaj sharam chhoro, bas dil ki har khwahish bolo 😈🔥", "hot"],
+        ["Pull Me Closer", "Door baithe ho to kya, khayalon mein toh baahon mein ho 💋", "hot"],
+        ["Irresistible Queen", "Tumhari har ek ada mujhe pagal kar deti hai 🔥👑", "hot"],
+        ["Wild Bunny Mode", "Aaj tumhara Bunny poore jazbaat mein hai 🐰🔥", "hot"],
+        ["Fire In My Veins", "Tumhari ek nazar aur poori duniya bhool jaati hai 💫🔥", "hot"],
+        ["Till Morning Light", "Aaj raat baat karte karte subah karne ka irada hai 🌙❤️‍🔥", "hot"],
+        ["Lip Bite Signal", "Dekh kar dil behak raha hai jaan 🫦🔥", "hot"],
+        ["Late Night Touch", "Khayalon mein har pal tumhein chhoo raha hoon 🌙💋", "hot"],
+        ["Sweet Addiction", "Tumhari baaton ka aisa nasha hai jo utarta hi nahi 🍷🔥", "hot"],
+        ["Heart On Fire", "Aaj dil mein sirf aag aur pyaar hi pyaar hai ❤️‍🔥", "hot"],
+        ["Come Right Here", "Bas ek baar saamne aa jao, phir dekho kya hota hai 😈", "hot"],
+        ["Velvet Kisses", "Hothon par pyaar aur dil mein bechaini 💋✨", "hot"],
+        ["No Boundaries", "Aaj tumhare saath har lamha yaadgar banana hai 🔥", "hot"],
+        ["Magnetic Pull", "Tumse door rehne ki koshish har baar haar jaati hai 🧲🔥", "hot"],
+        ["Secret Desire", "Kuch baatein sirf aankhon aur ehsaas se hoti hain 😈❤️", "hot"],
+        ["Hot & Sweaty", "Tumhara naam hi dil ki garmi badha deta hai 🥵🔥", "hot"],
+        ["Whisper In Ear", "Kaan ke paas aakar dheere se kuch kehna hai 💋🌙", "hot"],
+        ["Deep Embrace", "Itni zor se thaam loon ke saans bhi ruk jaye 🤗🔥", "hot"],
+        ["Midnight Spell", "Chaandni raat aur tumhari jawaani ka jaadoo 🌙😈", "hot"],
+        ["Pure Chemistry", "Humare darmiyan jo hai uska koi naam nahi 🔥💘", "hot"],
+        ["All Yours Tonight", "Aaj ka har pal sirf tumhare naam jaan ❤️‍🔥💋", "hot"]
+      ],
+      romance: [
+        ["Romance In Rain", "Baarish ki boondein aur tumhara haath mere haath mein 🌧️❤️", "love"],
+        ["Forehead Kiss", "Pyaar bhari ek kiss tumhare mathe par... sukoon hi sukoon ✨", "love"],
+        ["Soulmate Hug", "Tum meri zindagi ka sabse khoobsurat ehsaas ho 💖🌹", "love"],
+        ["Janam Janam Saath", "Har khushi aur har gham mein sirf tumhara saath chahiye 💍", "love"],
+        ["Butterflies In Heart", "Aaj bhi tumhara naam sun kar dil tezz dhadakta hai 🦋💓", "love"],
+        ["My Whole World", "Meri poori duniya simat kar sirf tum mein aa gayi hai ❤️", "love"],
+        ["Chandni Raat & Tum", "Khamosh raat, halki hawa aur sirf tumhari baatein 🌙💫", "love"],
+        ["Peace Of My Soul", "Tumse baat na ho toh din adhoora aur bechain lagta hai 🕊️", "love"],
+        ["Chai, Barish & Love", "Ek cup garam chai aur saamne baithi meri jaan ☕🌧️", "love"],
+        ["Dil Ka Tajmahal", "Tumhare pyaar ne meri zindagi ko jannat bana diya hai 👑💘", "love"],
+        ["Intiha Ka Ishq", "Hadd se zyada pyaar karta hoon tumse, koi hisaab nahi ❤️‍🔥", "love"],
+        ["Forever Yours", "Kal bhi tumhara tha, aaj bhi tumhara hoon, aage bhi rahunga 💌", "love"],
+        ["Hand In Hand", "Kisi bhi raaste par chalo, mera haath tumhare haath mein hai 🤝❤️", "love"],
+        ["Endless Missing", "Har second tumhari yaad aati hai jaan 🥺💖", "love"],
+        ["Sweetest Smile", "Tumhari muskurahat meri har thakan mita deti hai 😊🌹", "love"],
+        ["Mountain Rain Dream", "Pahadon ki baarish mein tumhare saath bheegne ka khwaab 🏔️🌧️", "love"],
+        ["True Devotion", "Meri har dua mein pehla naam sirf tumhara hota hai 🙏🏻❤️", "love"],
+        ["Soft Whisper", "Dil kehta hai bas tumhein dekhta rahoon 💖✨", "love"],
+        ["Golden Bond", "Humara rishta sabse khaas aur sabse saccha hai 💛💕", "love"],
+        ["Warmth Of Love", "Tumhara pyaar meri zindagi ki sabse badi taqat hai 🔥💖", "love"],
+        ["Starlight Promise", "Sitaron ki chhaon mein wada hai kabhi saath nahi chhorunga ⭐❤️", "love"],
+        ["Heartbeats Synced", "Mera dil ab tumhari dhadkan ke saath chalta hai 💓💑", "love"],
+        ["Rose For Jaan", "Yeh laal gulaab sirf meri sabse pyaari jaan ke liye 🌹❤️", "love"],
+        ["Unconditional", "Jaisi bhi ho, jitni bhi ho, bas tum meri ho 💕👑", "love"],
+        ["Morning Sunshine", "Subah ki pehli kiran aur tumhara pyaar bhara msg ☀️❤️", "love"],
+        ["Safe Haven", "Tumhare paas aa kar lagta hai ghar aa gaya hoon 🏡💖", "love"],
+        ["Infinite Love", "Pyaar kam nahi hoga kabhi, bas badhta hi jayega ∞❤️", "love"]
+      ],
+      gussa: [
+        ["Sakht Gussa!", "Bahut zyada gussa aa raha hai, abhi baat mat karo! 😤💢", "angry"],
+        ["Bohot Bura Laga", "Sach mein dil dukha diya tumne... ab mujhe kuch nahi kehna 😒💔", "angry"],
+        ["Hadd Kar Di", "Aaj toh tumne had hi paar kar di... main naraz hoon! 😠🔥", "angry"],
+        ["Full Attitude", "Dekhte hain kab tak manaate ho... gussa aasan nahi hai 😤💅🏻", "angry"],
+        ["Bhaad Mein Jao Mood", "Aaj dimaag garam hai, faltu baat bilkul mat karna 😡💥", "angry"],
+        ["Katti! No Talk", "Katti! Aaj tumse koi baat nahi karni mujhe 🤐❌", "angry"],
+        ["Dil Pathar Kar Liya", "Ab toh aansu bhi nahi aate, bas gussa bhar gaya hai 🖤😤", "angry"],
+        ["Nakhre Peak Level", "Itni jaldi maan jaungi kya? Pehle galti maano! 😠💢", "angry"],
+        ["Mujhe Parwah Nahi", "Jaise tumhe parwah nahi, waise mujhe bhi koi parwah nahi 🙄🔥", "angry"],
+        ["Ignore Mode On", "Ab main bhi bilkul waise hi behave karungi jaise tum karte ho 😒", "angry"],
+        ["Aankhein Dikha Raha Hoon", "Zyada mat bol warna sach mein gussa aur badh jayega 😠", "angry"],
+        ["Darwaza Band", "Dil ka darwaza abhi band hai, knock mat karo 🚪😤", "angry"],
+        ["Ulti Ginti Shuru", "10, 9, 8... mera sabr khatam hone wala hai 😡", "angry"],
+        ["Koi Faraq Nahi Padta", "Jao jo karna hai karo, mujhe koi farq nahi padta 😒", "angry"],
+        ["Sakht Narazgi", "Aaj ki narazgi aasani se nahi tootne wali 😤💔", "angry"],
+        ["Phone Rakho", "Abhi mood bilkul off hai, baad mein baat karenge 😠📴", "angry"],
+        ["Tera Gussa vs Mera Gussa", "Aaj takkar barabar ki hai, peeche nahi hatunga 😤🔥", "angry"],
+        ["Dil Toot Gaya", "Aisi umeed nahi thi tumse... bahut bura kiya 💔😒", "angry"],
+        ["Chup Hu Main", "Aaj main kuch nahi bolunga, bas dekh raha hoon 🤐😤", "angry"],
+        ["Hadd Se Zyada Gussa", "Ab toh gussa naak par aa gaya hai 😡💢", "angry"],
+        ["Baat Band", "Aaj ke liye baatein band samjho 🚫😠", "angry"],
+        ["Kya Zaroorat Thi?", "Yeh sab karne ki kya zaroorat thi? Dil dukha diya 😒", "angry"],
+        ["Nakhrebaaz", "Har baar aise hi karte ho, phir sorry bol dete ho 😤", "angry"],
+        ["Cold Shoulder", "Abhi thoda thanda padne do mamla, gussa tezz hai ❄️😠", "angry"],
+        ["Aaj Koi Treat Nahi", "Gussa ho toh koi pyaar aur koi treat nahi milegi 😤🚫", "angry"],
+        ["Bahut Hua", "Bas bahut hua, ab mujhe akele rehne do 😒", "angry"],
+        ["Fire Mood", "Aaj chingari lag chuki hai, paas mat aao 🔥😠", "angry"]
+      ],
+      manana: [
+        ["Maaf Kar Do Jaan", "Galti ho gayi jaan... please maaf kar do na 🥺🙏🏻❤️", "sorry"],
+        ["Gussa Chhoro Na", "Ab gussa chhor bhi do, tumhare bina dil nahi lagta 🥺💕", "sorry"],
+        ["Soorryyy Babu", "Kaan pakad kar sorry bol raha hoon, ab has do na 😘🌹", "sorry"],
+        ["Rulaoge Kya Ab?", "Tumhara gussa dekh kar dil baith jata hai jaan 🥺💔", "sorry"],
+        ["Jhappi & Maafi", "Ek pyaari si jhappi aur kiss ke saath gussa khatam 🤗💋", "sorry"],
+        ["Meri Shahzadi", "Aapka gussa sir aankhon par, par ab muskurado na ✨👑", "sorry"],
+        ["Biryani Treat Pakki", "Chalo gussa khatam karo, pakki biryani treat dunga 🍛☕", "sorry"],
+        ["2 Min Baat Kar Lo", "Bas 2 minute pyaar se baat kar lo, sab theek ho jayega 📞❤️", "sorry"],
+        ["Pyar Double Milega", "Gussa chhoroge toh double pyaar milega wada hai 💓🌈", "sorry"],
+        ["Sorry Meri Jaan", "Dil se sorry bol raha hoon, ab maan bhi jao 🥺❤️", "sorry"],
+        ["Puppy Eyes Request", "Dekho kaise pyaar se dekh raha hoon... maaf kar do na 🐶🥺", "sorry"],
+        ["Gussa = Pyar", "Jitna gussa karte ho utna hi pyaar bhi aata hai mujhe 💕", "sorry"],
+        ["Katti Khatam Karo", "Ab katti khatam karo aur dosti/pyaar shuru karo 🤝❤️", "sorry"],
+        ["Ek Smile De Do", "Bas ek pyaari si smile de do, sab gham bhool jaunga 😊✨", "sorry"],
+        ["Tumhare Bina Adhoora", "Naraz reh kar apna waqt mat kharab karo jaan 🥺💖", "sorry"],
+        ["Coffee Date Offer", "Gussa khatam karo, achi si coffee pilata hoon ☕❤️", "sorry"],
+        ["Dil Se Maafi", "Aankhon mein dekh kar keh raha hoon—sorry jaan 🥺🌹", "sorry"],
+        ["Chalo Maan Jao", "Maan bhi jao na ab... kitna sataoge? 💕🥺", "sorry"],
+        ["Sweet Makeup Kiss", "Gussa bhool kar ek pyaari si kiss le lo 💋❤️", "sorry"],
+        ["Promise Dobara Nahi", "Pakka promise dobara aisi galti nahi hogi 🙏🏻💖", "sorry"],
+        ["Queen Ka Hukm", "Jo hukum meri jaan, bas gussa chhor kar baat kar lo 👑❤️", "sorry"],
+        ["Dil Behal Jaye", "Tumhari ek haan se mera dil khush ho jayega ✨💕", "sorry"],
+        ["Sab Theek Hai", "Ab sab theek kar lete hain, chalo pyaar se baat karte hain ❤️", "sorry"],
+        ["Warm Hug For You", "Yeh lo garam jhappi, ab gussa pighal jane do 🤗💖", "sorry"],
+        ["Meri Jaan Maan Jao", "Meri jaan, mera dil, meri duniya—please maan jao 🥺❤️", "sorry"],
+        ["Happy Ending", "Ladai-jhagda chhoro, pyaar wali ending karte hain 💕✨", "sorry"],
+        ["I Love You More", "Gussa hokar bhi main tumse sabse zyada pyaar karta hoon ❤️‍🔥", "sorry"]
+      ]
+    };
+
+    let activeStickerTab = "hot";
 
     function chooseUser(key) {
       document.getElementById("userIdInput").value = key;
@@ -319,19 +489,66 @@
       const opening = box.classList.contains("hidden");
       box.classList.toggle("hidden");
       if (opening) {
-        document.getElementById("stickerItemsGrid").innerHTML = STICKERS.map(st => `
-          <button type="button" onclick="sendSticker('${st.e}', '${st.t.replace(/'/g, "\\'")}', '${st.s.replace(/'/g, "\\'")}', ${st.hot})"
-            class="p-2 rounded-xl ${st.hot ? 'bg-rose-950/70 border-rose-500/40' : 'bg-white/10 border-white/15'} border text-center flex flex-col items-center active:scale-95">
-            <span class="text-2xl">${st.e}</span>
-            <span class="text-[10px] font-bold text-white line-clamp-1 mt-0.5">${st.t}</span>
-          </button>
-        `).join('');
+        document.getElementById("stickerSearchInput").value = "";
+        switchStickerTab(activeStickerTab);
       }
     }
 
-    function flyHearts(hot = false) {
-      const icons = hot ? ['🔥', '💋', '❤️‍🔥', '😈'] : ['❤️', '💖', '💕', '🌹'];
-      for (let i = 0; i < 8; i++) {
+    function switchStickerTab(tab) {
+      activeStickerTab = tab;
+      const map = {
+        hot: { id: "stTabHot", cls: "px-2 py-1 rounded-lg hot-grad text-white text-[10px] font-extrabold shrink-0" },
+        romance: { id: "stTabRomance", cls: "px-2 py-1 rounded-lg rose-grad text-white text-[10px] font-extrabold shrink-0" },
+        gussa: { id: "stTabGussa", cls: "px-2 py-1 rounded-lg angry-grad text-white text-[10px] font-extrabold shrink-0" },
+        manana: { id: "stTabManana", cls: "px-2 py-1 rounded-lg bg-amber-500 text-slate-950 text-[10px] font-extrabold shrink-0" }
+      };
+      Object.keys(map).forEach(k => {
+        const el = document.getElementById(map[k].id);
+        el.className = k === tab ? map[k].cls : "px-2 py-1 rounded-lg bg-white/10 text-slate-300 text-[10px] font-bold shrink-0";
+      });
+      filterStickers();
+    }
+
+    function filterStickers() {
+      const q = (document.getElementById("stickerSearchInput").value || "").trim().toLowerCase();
+      let pool = [];
+      if (q) {
+        Object.values(STICKERS_108).forEach(arr => {
+          arr.forEach(item => {
+            if (item[0].toLowerCase().includes(q) || item[1].toLowerCase().includes(q)) {
+              pool.push(item);
+            }
+          });
+        });
+      } else {
+        pool = STICKERS_108[activeStickerTab] || [];
+      }
+
+      document.getElementById("stickerItemsGrid").innerHTML = pool.map(([title, sub, mode]) => {
+        const pose = mode === "hot" ? "hot" : mode === "angry" ? "angry" : mode === "sorry" ? "sorry" : "love";
+        const bg = mode === "hot"
+          ? "bg-rose-950/75 border-rose-500/45 hover:bg-rose-900/80"
+          : mode === "angry"
+          ? "bg-red-950/75 border-red-500/45 hover:bg-red-900/80"
+          : "bg-white/10 border-white/15 hover:bg-white/20";
+
+        return `
+          <button type="button" onclick="sendSticker('${pose}', '${title.replace(/'/g, "\\'")}', '${sub.replace(/'/g, "\\'")}', '${mode}')"
+            class="p-1.5 rounded-xl ${bg} border text-center flex flex-col items-center justify-center gap-0.5 active:scale-95 transition">
+            ${makeCoupleSvg(pose)}
+            <span class="text-[10px] font-extrabold text-white line-clamp-1">${title}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function flyHearts(mode = "love") {
+      const icons = mode === "hot"
+        ? ['🔥', '💋', '❤️‍🔥', '😈', '🥵']
+        : mode === "angry"
+        ? ['😤', '💢', '🔥', '😒']
+        : ['❤️', '💖', '💕', '🌹'];
+      for (let i = 0; i < 9; i++) {
         const el = document.createElement("span");
         el.textContent = icons[Math.floor(Math.random() * icons.length)];
         el.className = "fly-heart text-2xl";
@@ -368,18 +585,17 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const MOODS = ["🥰 In Love", "🔥 Hot Mood", "🥺 Missing You", "💋 Craving Kiss", "🫡 On Duty", "😴 Sleepy"];
+    const MOODS = ["🥰 In Love", "🔥 Hot Mood", "😤 Gussa Mode", "🥺 Missing You", "💋 Craving Kiss", "🫡 On Duty"];
     let moodIndex = 0;
     let heartbeatTimer = null;
 
     window.startLiveSync = (userKey) => {
-      const me = USERS[userKey].role;           // "Bunny" or "Mutu"
-      const partner = USERS[userKey].partnerRole; // "Mutu" or "Bunny"
+      const me = USERS[userKey].role;
+      const partner = USERS[userKey].partnerRole;
 
       const metaRef = doc(db, "bm_live_v2", "status");
       const msgsCol = collection(db, "bm_live_v2_messages");
 
-      // 1. Update My Online Heartbeat Every 15 Seconds
       const pingPresence = () => {
         setDoc(metaRef, {
           [me]: { lastSeen: Date.now(), mood: MOODS[moodIndex] }
@@ -389,7 +605,6 @@
       if (heartbeatTimer) clearInterval(heartbeatTimer);
       heartbeatTimer = setInterval(pingPresence, 15000);
 
-      // 2. Listen to Live Presence, Mood & Pulse
       onSnapshot(metaRef, (snap) => {
         setSyncConnected();
         if (!snap.exists()) return;
@@ -417,13 +632,12 @@
         }
       }, (err) => showSyncError(err));
 
-      // 3. Listen to Live Chat Messages
       onSnapshot(query(msgsCol, orderBy("ts", "asc"), limit(100)), (snap) => {
         setSyncConnected();
         const feed = document.getElementById("chatFeed");
 
         if (snap.empty) {
-          feed.innerHTML = `<div class="text-center py-12 text-xs text-slate-400">Live connection ready! Send a message, selfie, or hot sticker ❤️🔥</div>`;
+          feed.innerHTML = `<div class="text-center py-12 text-xs text-slate-400">Live connection ready! Tap 🔥 for 108 couple stickers or send a selfie 📸</div>`;
           return;
         }
 
@@ -434,7 +648,7 @@
 
           if (m.type === "photo" && m.img) {
             return `
-              <div class="flex flex-col ${mine ? 'items-end' : 'items-start'}">
+              <div class="flex flex-col ${mine ? 'items-end' : 'items-start'} card-pop">
                 <span class="text-[10px] text-slate-400 mb-1 px-1">${m.sender} • ${time}</span>
                 <div class="max-w-[75%] p-1.5 rounded-3xl ${mine ? 'rose-grad' : 'bg-white/15'} shadow-lg">
                   <img src="${m.img}" onclick="document.getElementById('zoomImg').src='${m.img}'; document.getElementById('zoomModal').classList.remove('hidden');"
@@ -445,13 +659,19 @@
           }
 
           if (m.type === "sticker") {
+            const stickerBg = m.mode === "hot"
+              ? "hot-grad border border-rose-300/35 shadow-rose-600/30"
+              : m.mode === "angry"
+              ? "angry-grad border border-red-400/40 shadow-red-900/40"
+              : "rose-grad border border-white/25 shadow-pink-600/25";
+
             return `
-              <div class="flex flex-col ${mine ? 'items-end' : 'items-start'}">
+              <div class="flex flex-col ${mine ? 'items-end' : 'items-start'} card-pop">
                 <span class="text-[10px] text-slate-400 mb-1 px-1">${m.sender} • ${time}</span>
-                <div class="max-w-[78%] p-3.5 rounded-3xl ${m.hot ? 'hot-grad border border-rose-300/30' : 'rose-grad border border-white/20'} text-center shadow-lg">
-                  <div class="text-4xl mb-1">${m.e}</div>
-                  <div class="serif-title text-sm font-bold text-white">${m.t}</div>
-                  <p class="text-[11px] text-rose-100 mt-0.5">${m.s}</p>
+                <div class="max-w-[82%] px-4 py-3 rounded-3xl ${stickerBg} text-center shadow-xl">
+                  ${makeCoupleSvg(m.pose || m.mode || "love")}
+                  <div class="serif-title text-sm font-extrabold text-white mt-1">${m.t}</div>
+                  <p class="text-[11px] text-white/95 mt-0.5 leading-snug">${m.s}</p>
                 </div>
               </div>
             `;
@@ -470,7 +690,6 @@
         feed.scrollTop = feed.scrollHeight;
       }, (err) => showSyncError(err));
 
-      // Send Text Message
       document.getElementById("msgForm").onsubmit = async (e) => {
         e.preventDefault();
         const input = document.getElementById("msgInput");
@@ -480,15 +699,16 @@
         await addDoc(msgsCol, { sender: me, type: "text", text: val, ts: Date.now() });
       };
 
-      // Send Sticker
-      window.sendSticker = async (e, t, s, hot) => {
-        if (navigator.vibrate) navigator.vibrate([40, 30, 70]);
-        flyHearts(hot);
+      window.sendSticker = async (pose, t, s, mode) => {
+        if (navigator.vibrate) {
+          if (mode === "angry") navigator.vibrate([100, 40, 100]);
+          else navigator.vibrate([45, 30, 75]);
+        }
+        flyHearts(mode);
         document.getElementById("stickerBox").classList.add("hidden");
-        await addDoc(msgsCol, { sender: me, type: "sticker", e, t, s, hot, ts: Date.now() });
+        await addDoc(msgsCol, { sender: me, type: "sticker", pose, t, s, mode, ts: Date.now() });
       };
 
-      // Send Compressed Photo
       window.uploadPrivatePhoto = (ev) => {
         const file = ev.target.files[0];
         if (!file) return;
@@ -506,7 +726,7 @@
             canvas.getContext("2d").drawImage(img, 0, 0, w, h);
             const dataUrl = canvas.toDataURL("image/jpeg", 0.65);
             await addDoc(msgsCol, { sender: me, type: "photo", img: dataUrl, ts: Date.now() });
-            flyHearts(false);
+            flyHearts("love");
             toast("Photo sent! 📸");
             ev.target.value = "";
           };
@@ -515,23 +735,20 @@
         reader.readAsDataURL(file);
       };
 
-      // Send Heart Pulse
       window.sendLivePulse = async () => {
         if (navigator.vibrate) navigator.vibrate([60, 40, 100]);
-        flyHearts(false);
+        flyHearts("love");
         const t = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         await setDoc(metaRef, { pulseText: `💓 ${me} sent a live heartbeat at ${t}` }, { merge: true });
         toast(`Heartbeat sent to ${partner}!`);
       };
 
-      // Cycle Mood
       window.cycleMyMood = async () => {
         moodIndex = (moodIndex + 1) % MOODS.length;
         document.getElementById("myMoodPill").textContent = MOODS[moodIndex];
         await setDoc(metaRef, { [me]: { mood: MOODS[moodIndex], lastSeen: Date.now() } }, { merge: true });
       };
 
-      // Clear Chat
       window.clearChatHistory = async () => {
         if (!confirm("Delete all messages & photos for both of you?")) return;
         const snap = await getDocs(msgsCol);
